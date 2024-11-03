@@ -25,8 +25,17 @@
 char *
 crypt (const char *key, const char *setting)
 {
-  static TLS_LD struct crypt_data nr_crypt_ctx;
-  return crypt_r (key, setting, &nr_crypt_ctx);
+  struct crypt_data nr_crypt_ctx;
+  static TLS_LD char output[CRYPT_OUTPUT_SIZE];
+
+  crypt_r (key, setting, &nr_crypt_ctx);
+  strcpy_or_abort (output, sizeof (output), nr_crypt_ctx.output);
+
+#if ENABLE_FAILURE_TOKENS
+  return output;
+#else
+  return output[0] == '*' ? 0 : output;
+#endif /* ENABLE_FAILURE_TOKENS */
 }
 SYMVER_crypt;
 #endif
