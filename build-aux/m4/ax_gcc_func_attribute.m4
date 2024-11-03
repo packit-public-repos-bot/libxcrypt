@@ -57,6 +57,7 @@
 #    pure
 #    sentinel
 #    sentinel_position
+#    tls_model
 #    unused
 #    used
 #    visibility
@@ -191,6 +192,12 @@ AC_DEFUN([AX_GCC_FUNC_ATTRIBUTE], [
                 ],
                 [sentinel_position], [
                     int foo(void *p, ...) __attribute__(($1(1)));
+                ],
+                [tls_model], [
+                    int foo_ld( void ) { static __thread __attribute__(($1("local-dynamic")))  int i; return i; };
+                    int foo_gd( void ) { static __thread __attribute__(($1("global-dynamic"))) int i; return i; };
+                    int foo_le( void ) { static __thread __attribute__(($1("local-exec")))     int i; return i; };
+                    int foo_ie( void ) { static __thread __attribute__(($1("initial-exec")))   int i; return i; };
                 ],
                 [returns_nonnull], [
                     void *foo( void ) __attribute__(($1));

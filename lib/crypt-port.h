@@ -73,6 +73,30 @@
 #define __THROW /* nothing */
 #endif
 
+/* Thread-local storage may not be supported by
+   all compilers and their specific releases.  */
+#ifndef HAVE_THREAD_LOCAL_STORAGE
+# error "Unable to determine how to declare thread-local storage"
+#endif
+
+#ifdef HAVE_FUNC_ATTRIBUTE_TLS_MODEL
+/* tls-models for use in DSO,  */
+#define TLS_LD TLS __attribute ((tls_model ("local-dynamic")))
+#define TLS_GD TLS __attribute ((tls_model ("global-dynamic")))
+/* and for executables, like tests.  */
+#define TLS_LE TLS __attribute ((tls_model ("local-exec")))
+#define TLS_IE TLS __attribute ((tls_model ("initial-exec")))
+#elif defined HAVE_F_TLS_MODEL_LD_FLAG
+/* The DSO gets build with -ftls-model=local-dynamic; we do not
+   care too much about the tls-model used in tests.  */
+#define TLS_LD TLS
+#define TLS_GD TLS
+#define TLS_LE TLS
+#define TLS_IE TLS
+#else
+# error "Unable to determine how to explicitly declare thread-local storage with local-dynamic model"
+#endif
+
 /* Suppression of unused-argument warnings.  */
 #if defined __GNUC__ && __GNUC__ >= 3
 # define ARG_UNUSED(x) x __attribute__ ((__unused__))

@@ -93,7 +93,18 @@ if test x$ac_cv_c_address_sanitizer = xyes; then
     [Define when compiling with ASan.  Only affects tests.])
 fi
 
-# Checks for libraries: currently none needed.
+# Checks for libraries.
+# Some tests are multithreaded.
+AX_PTHREAD([
+  # this could be worked around with sufficient hackery in the Makefile,
+  # maybe, but considering it only affects (old versions of?) AIX, I can't
+  # be bothered.
+  if test x"$PTHREAD_CC" != x"$CC"; then
+    AC_MSG_ERROR([Automake does not support PTHREAD_CC different from CC.])
+  fi
+  AC_DEFINE([HAVE_PTHREAD],[1],
+      [Define if you have POSIX threads libraries and header files.])
+])
 
 # Checks for header files.
 AC_CHECK_HEADERS_ONCE([
@@ -151,6 +162,10 @@ if test $ac_cv_header_sys_cdefs_THROW = yes; then
 fi
 
 # Checks for typedefs, structures, and compiler characteristics.
+AX_TLS(
+  [AC_DEFINE([HAVE_THREAD_LOCAL_STORAGE], [1],
+    [Define if thread-local storage (TLS) is supported by the compiler.])]
+)
 zw_C_ALIGNAS
 zw_C_ALIGNOF
 zw_C_MAX_ALIGN_T
@@ -159,6 +174,7 @@ zw_C_STATIC_ASSERT
 zw_PROG_LD_WRAP
 AX_CHECK_VSCRIPT
 AX_GCC_FUNC_ATTRIBUTE(symver)
+AX_GCC_FUNC_ATTRIBUTE(tls_model)
 
 # FIXME: This only checks whether the linker accepts either
 # -Wl,-z,defs or -Wl,--no-undefined.  It doesn't check that the switch
@@ -238,8 +254,17 @@ AC_SUBST([BINDNOW_FLAG])
 # It doesn't check that the switch actually does what we want it to do.
 AX_APPEND_COMPILE_FLAGS([-fno-plt], [OPTI_FLAGS])
 
+# FIXME: This only checks if the compiler accepts -ftls-model=local-dynamic.
+# It doesn't check that the switch actually does what we want it to do.
+AS_IF([test "x$ac_cv_tls"                           != xnone &&
+       test "x$ax_cv_have_func_attribute_tls_model" != xyes], [
+  AC_DEFINE([HAVE_F_TLS_MODEL_LD_FLAG], [1],
+    [Define if -ftls-model=local-dynamic is supported by the compiler.])
+  AX_APPEND_COMPILE_FLAGS([-ftls-model=local-dynamic], [TLS_LD_FLAG])])
+
 # Export compiler flags for optimization.
 AC_SUBST([OPTI_FLAGS])
+AC_SUBST([TLS_LD_FLAG])
 
 # Checks for library functions.
 AC_CHECK_FUNCS_ONCE([
