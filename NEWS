@@ -14,8 +14,11 @@ Version 4.4.37
   previous output).
   This feature is a safety net against sloppy coding.  Programs are
   still strongly encouraged to use the reentrant functions instead,
-  because this safety net is not guaranteed by any standard
-  (although we are informed that Solaris also does this).
+  both because this safety net is not guaranteed by any standard
+  (although we are informed that Solaris also does this) and because
+  this introduces some overhead for initializing a buffer of
+  'sizeof (crypt_data)' as well as for copying the computed output
+  to the thread-local output buffer for each invocation of crypt.
 
 Version 4.4.36
 * Fix left over bits failing with Perl v5.38.0 (issue #173).
