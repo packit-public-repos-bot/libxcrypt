@@ -7,6 +7,15 @@ Version 4.4.37
 * Several fixes to the manpages (issue #185).
 * Add binary compatibility for x86_64 GNU/Hurd (issue #189).
 * Only test the needed makecontext signature during configure (issue #178).
+* crypt and crypt_gensalt now use per-thread storage areas for their
+  output, allocated upon the first call in each thread that uses them.
+  This makes it safe to call these functions from multiple threads
+  simultaneously (but consecutive calls will still clobber the
+  previous output).
+  This feature is a safety net against sloppy coding.  Programs are
+  still strongly encouraged to use the reentrant functions instead,
+  because this safety net is not guaranteed by any standard
+  (although we are informed that Solaris also does this).
 
 Version 4.4.36
 * Fix left over bits failing with Perl v5.38.0 (issue #173).
